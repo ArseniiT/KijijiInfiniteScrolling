@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match        https://www.kijiji.ca/b-velos/ville-de-montreal/c644l1700281?ad=offering&price=__300&minNumberOfImages=1
+// @match        https://www.kijiji.ca/*
 // @grant        none
 // ==/UserScript==
 
@@ -12,10 +12,13 @@
   'use strict';
 
   // Your code here...
-  var loaded = false;
-  var body = document.body; //getElementById('Footer');
+  var scrollOnBottom = false; // for loading only one time whene scroll is on bottom
+
   var pageCounter = 1;
   var currentUrl = window.location.href;
+
+  document.getElementById('StickyLeaderboard').style.visibility='hidden'; // remove banner on top
+
 
 
   window.onscroll = function() {
@@ -23,51 +26,51 @@
     var h = window.innerHeight;
     var docHeight = document.body.scrollHeight;
 
-    if((posY + h) >= (docHeight-1000) && !loaded) {
+    if((posY + h) >= (docHeight-1000) && !scrollOnBottom) {
 
-      loaded = true;
+      scrollOnBottom = true;
       pageCounter += 1;
 
 
       var iframeInsert = document.createElement('iframe');
-      //iframeInsert.style.display = "none";
+      iframeInsert.style.display = "none";
       iframeInsert.src = pagination(currentUrl, pageCounter);
       iframeInsert.width = '1400px';
       iframeInsert.height = '700px';
-        iframeInsert.id = 'frame';
-      insertAfter(iframeInsert, body);
+      iframeInsert.id = 'frame';
+      insertAfter(iframeInsert, document.body);
 
       var items = document.getElementsByClassName('search-item');
+
       setTimeout(function() {
+        // insert new items from iframe
+        var innerDoc = iframeInsert.contentWindow.document;
+        var iframeObj = innerDoc.getElementsByClassName('search-item');
+        for(let i = 0; i < iframeObj.length; i++) {
+            insertAfter(iframeObj[i], items[items.length-1]);
+        }
 
-          // insert new items from iframe
-          var innerDoc = iframeInsert.contentWindow.document;
-          var iframeObj = innerDoc.getElementsByClassName('search-item');
-          for(let i = 0; i < iframeObj.length; i++) {
-              insertAfter(iframeObj[i], items[items.length-1]);
-          }
+        // insert new pagination from iframe
+        var Pagination = document.getElementsByClassName('pagination');
+        var iframePagination = innerDoc.getElementsByClassName('pagination');
+        insertAfter(iframePagination[0], Pagination[0]);
 
-          // insert new pagination from iframe
-          var Pagination = document.getElementsByClassName('pagination');
-          var iframePagination = innerDoc.getElementsByClassName('pagination');
-          insertAfter(iframePagination[0], Pagination[0]);
+        // remove iframe
+        document.getElementsByTagName("html")[0].removeChild(document.getElementById('frame'));
+        // remove pagination
+        document.getElementsByClassName('bottom-bar')[0].removeChild(document.getElementsByClassName('pagination')[0]);
 
-          // remove iframe
-          document.getElementsByTagName("html")[0].removeChild(document.getElementById('frame'));
-          // remove pagination
-          document.getElementsByClassName('bottom-bar')[0].removeChild(document.getElementsByClassName('pagination')[0]);
+        scrollOnBottom = false;
+      }, (2 * 1000));
+     }}
 
-          //console.log(iframeObj.length + ' ---------------------------------------------' + items.length);
-        }, (2 * 1000));
-
-    }
-  }
 
   function insertAfter(elem, refElem) {
+    //console.log(elem + ' | ' + refElem.nextSibling);
     return refElem.parentNode.insertBefore(elem, refElem.nextSibling);
   }
 
-  function pagination (url, pageNumber) {
+  function pagination(url, pageNumber) {
     if (typeof url !== 'string') {
         return '';
     }
