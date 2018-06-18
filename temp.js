@@ -17,7 +17,7 @@
   var pageCounter = 1;
   var currentUrl = window.location.href;
 
-  
+
   window.onscroll = function() {
     var posY = window.pageYOffset;
     var h = window.innerHeight;
@@ -54,10 +54,10 @@
 
           // remove iframe
           document.getElementsByTagName("html")[0].removeChild(document.getElementById('frame'));
+          // remove pagination
+          document.getElementsByClassName('bottom-bar')[0].removeChild(document.getElementsByClassName('pagination')[0]);
 
-        console.log(iframeObj.length + ' ---------------------------------------------' + items.length);
-
-
+          //console.log(iframeObj.length + ' ---------------------------------------------' + items.length);
         }, (2 * 1000));
 
     }
